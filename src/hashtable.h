@@ -32,5 +32,6 @@ typedef struct
 
 unsigned long hash(const char *key, int table_size);
 HashTable *create_table (int size);
+void insert(HashTable *table, const char *key, int row);
 
 #endif
