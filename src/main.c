@@ -9,6 +9,7 @@ int main (void)
 
 
     insert(table, "404", 6);
+    insert(table, "404", 99);
     insert(table, "307", 6);
     insert(table, "200", 60);
 
@@ -22,7 +23,7 @@ int main (void)
     {
         if (strcmp(e->key, "404") == 0)
         {
-            printf("404 -> row_count=%d: ", e->row_count);
+            printf("404 -> row_count=%d:\n", e->row_count);
         
         for (int i = 0; i < e->row_count; i++) 
         {
