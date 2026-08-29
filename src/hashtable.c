@@ -85,3 +85,19 @@ void insert(HashTable *table, const char *key, int row) {
     table->buckets[idx] = new_entry;
     table->count++;
 }
+
+Entry *lookup( HashTable *table, const char *key)
+{
+    unsigned long idx = hash(key, table->size);
+    Entry *curr = table->buckets[idx];
+
+    while (curr != NULL)
+    {
+        if (strcmp(key, curr->key) == 0)
+        {
+            return curr;
+        }
+        curr = curr->next;
+    }
+    return NULL;
+}
