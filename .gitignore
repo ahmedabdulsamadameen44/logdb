@@ -4,3 +4,5 @@ test_logdb.exe
 *.exe
 data.csv
 *.csv
+rows.dat
+index.dat
