@@ -1,3 +1,7 @@
+// Portions of this  implementation were developed with 
+// assistance from Claude (Anthropic)
+
+
 
 #include "index.h"
 #include <stdio.h>

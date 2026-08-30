@@ -1,7 +1,12 @@
+// Portions of this  implementation were developed with 
+// assistance from Claude (Anthropic)
+
+
 #include "hashtable.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "command.h"
 
 int main (int argc, char *argv[])
 {
