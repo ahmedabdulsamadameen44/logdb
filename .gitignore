@@ -6,3 +6,4 @@ data.csv
 *.csv
 rows.dat
 index.dat
+*.json
