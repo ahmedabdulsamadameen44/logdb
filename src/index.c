@@ -6,7 +6,13 @@
 #include "index.h"
 #include <stdio.h>
 #include <string.h>
-
+#include <stdlib.h>
+#include "hashtable.h"
+#include "row.h"
+#include "parser.h"
+#include "command.h"
+#include <string.h>
+#include <stdlib.h>
 
 
 int write_index_entry(const char *key, int *rows, int row_count, FILE *file) {
