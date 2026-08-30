@@ -1,28 +1,40 @@
 #include "hashtable.h"
+#include "command.h"
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
-int main(void)
+int main (int argc, char *argv[])
 {
-    HashTable *table = create_table(2048);
+    if (argc != 3)
+    {
+        fprintf(stderr,"not enough arguments\n");
+        return 1;
+    }
+ 
+    
 
-    insert(table, "404", 6);
-    insert(table, "404", 99);
-    insert(table, "307", 6);
-    insert(table, "200", 60);
-
-    printf("table size : %d  , table count : %d\n", table->size, table->count);
-
-    Entry *found = lookup(table, "404");
-    if (found != NULL) {
-        printf("404 -> row_count=%d: ", found->row_count);
-        for (int i = 0; i < found->row_count; i++) {
-            printf("%d ", found->rows[i]);
-        }
-        printf("\n");
-    } else {
-        printf("404 not found\n");
+    if (strcmp(argv[1],"query") == 0)
+    {
+       int query_done = query(argv[2]);
+       return query_done;
     }
 
+
+    else if(strcmp(argv[1],"load") == 0 )
+    {
+       int load_done = load(argv[2]);
+       return load_done;
+    }
+
+
+    else
+    {
+        fprintf(stderr,"not a command");
+        return 1;
+    }
+    
+
     return 0;
+    //TODO load , query
 }
