@@ -2,3 +2,5 @@ bin_logdb.exe
 test_logdb.exe
 *.o
 *.exe
+data.csv
+*.csv

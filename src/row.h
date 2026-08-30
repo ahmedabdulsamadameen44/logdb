@@ -2,7 +2,9 @@
 #define ROW_H
 
 #define HOST_MAX 64
-#define LOG_PATH_MAX 256
+#define LOG_PATH_MAX 128
+#include <stdio.h>
+#include <string.h>
 
 typedef struct {
     char host[HOST_MAX];
