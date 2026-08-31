@@ -10,6 +10,8 @@
 #include "index.h"
 #include "parser.h"
 #include <string.h>
+#include <errno.h>
+#include "query_parser.h"
 
 
 
@@ -87,32 +89,34 @@ int load(const char *csv_path) {
 
 
 int query(const char *query_str) {
-    FILE *index_fp = fopen("index.dat", "rb");
-    if (index_fp == NULL) {
-        perror("fopen index.dat");
+    Token tokens[MAX_TOKENS];
+    int token_count = tokenize(query_str, tokens);
+    if (token_count < 0) {
+        fprintf(stderr, "Error tokenizing query\n");
         return 1;
     }
 
-    char *key;
-    int *rows;
-    int row_count;
-
-    while (read_index_entry(&key, &rows, &row_count, index_fp) == 0) {
-        if (strcmp(key, query_str) == 0) {
-            printf("Found %d rows for status %s:\n", row_count, key);
-            for (int i = 0; i < row_count; i++) {
-                printf("Row %d\n", rows[i]);
-            }
-            free(key);
-            free(rows);
-            fclose(index_fp);
-            return 0;
-        }
-        free(key);
-        free(rows);
+    ParsedQuery parsed_query;
+    int parse_result = parse_query(tokens, token_count, &parsed_query);
+    if (parse_result != 0) {
+        fprintf(stderr, "Error parsing query\n");
+        return 1;
     }
 
-    fclose(index_fp);
-    printf("No rows found for status %s\n", query_str);
+    // For demonstration purposes, we will just print the parsed query
+    printf("Parsed Query:\n");
+    printf("Mode: %s\n", parsed_query.mode == MODE_SELECT_STAR ? "SELECT *" : "SELECT COUNT");
+    if (parsed_query.mode == MODE_SELECT_COUNT) {
+        printf("Count Field: %s\n", parsed_query.count_field);
+    }
+    printf("Conditions (%d):\n", parsed_query.condition_count);
+    for (int i = 0; i < parsed_query.condition_count; i++) {
+        printf("  %s %s %s\n", parsed_query.conditions[i].field, parsed_query.conditions[i].op, parsed_query.conditions[i].value);
+    }
+    if (parsed_query.has_group_by) {
+        printf("Group By: %s\n", parsed_query.group_by_field);
+        printf("Sort Order: %s\n", parsed_query.sort_order == SORT_ASC ? "ASC" : (parsed_query.sort_order == SORT_DESC ? "DESC" : "NONE"));
+    }
+
     return 0;
 }
