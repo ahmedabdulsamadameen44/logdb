@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "command.h"
+#include "query_parser.h" 
 
 int main (int argc, char *argv[])
 {
@@ -16,21 +17,31 @@ int main (int argc, char *argv[])
     }
  
     
-
-    if (strcmp(argv[1],"query") == 0)
+    if (strcmp(argv[1], "query") == 0)
     {
-       int query_done = query(argv[2]);
-       return query_done;
+        Token tokens[MAX_TOKENS];
+        int token_count = tokenize(argv[2], tokens);
+        if (token_count < 0) {
+            fprintf(stderr, "Error tokenizing query\n");
+            return 1;
+        }
+
+        ParsedQuery pq;
+        if (parse_query(tokens, token_count, &pq) != 0) {
+            fprintf(stderr, "Error parsing query\n");
+            return 1;
+        }
+
+        int query_done = query(&pq);
+        return query_done;
     }
 
-
-    else if(strcmp(argv[1],"load") == 0 )
+    else if (strcmp(argv[1], "load") == 0)
     {
-       int load_done = load(argv[2]);
-       return load_done;
+        int load_done = load(argv[2]);
+        return load_done;
     }
-
-
+    
     else
     {
         fprintf(stderr,"not a command");

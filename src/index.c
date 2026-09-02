@@ -10,7 +10,6 @@
 #include "hashtable.h"
 #include "row.h"
 #include "parser.h"
-#include "command.h"
 #include <string.h>
 #include <stdlib.h>
 
