@@ -330,9 +330,9 @@ int query(ParsedQuery *pq) {
 
     if (pq->has_group_by) 
     {
+        sort_groups(groups, group_count, pq->sort_order);
         for (int i = 0; i < group_count; i++) 
         {
-            sort_groups(groups, group_count, pq->sort_order);
             printf("%s: %d\n", groups[i].value, groups[i].count);
         }
     }
