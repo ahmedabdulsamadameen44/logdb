@@ -208,7 +208,7 @@ static void update_groups(Row *row, ParsedQuery *pq, GroupCount groups[], int *g
 
 static void handle_match(Row *row, ParsedQuery *pq, int *count) {
     if (pq->mode == MODE_SELECT_STAR) {
-        printf("%s %s %d %d\n", row->host, row->path, row->status, row->bytes);
+        printf("%s\x1F%s\x1F%d\x1F%d\n", row->host, row->path, row->status, row->bytes);
     } 
     
     else {
@@ -324,7 +324,7 @@ int query(ParsedQuery *pq) {
     fclose(row_fp);
 
     if (pq->mode == MODE_SELECT_COUNT) {
-        printf("COUNT: %d\n", count);
+        printf("COUNT\x1F%d\n", count);   
     }
 
 
@@ -333,7 +333,7 @@ int query(ParsedQuery *pq) {
         sort_groups(groups, group_count, pq->sort_order);
         for (int i = 0; i < group_count; i++) 
         {
-            printf("%s: %d\n", groups[i].value, groups[i].count);
+            printf("GROUP\x1F%s\x1F%d\n", groups[i].value, groups[i].count);
         }
     }
 

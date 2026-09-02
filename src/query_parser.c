@@ -176,5 +176,11 @@ int parse_query(Token tokens[], int token_count, ParsedQuery *out_query)
     {
         return -1;
     }
+
+    if (out_query->mode == MODE_SELECT_STAR && out_query->has_group_by) {
+    return -1;
+    }
+
+    
     return 0;
 }
