@@ -9,6 +9,24 @@
 #include "query_parser.h"
 
 
+
+#define MAX_GROUPS 64
+
+
+
+
+typedef struct 
+{
+    char value[VALUE_MAX];
+    int count;
+} GroupCount;
+
+
+
+
+
+
+
 int load(const char *csv_path) {
     FILE *csv_fp = fopen(csv_path, "r");
     if (csv_fp == NULL) {
@@ -33,8 +51,14 @@ int load(const char *csv_path) {
 
     char line[512];
     int row_count = 0;
+    int is_first_line = 1;
 
     while (fgets(line, sizeof(line), csv_fp) != NULL) {
+        if (is_first_line) {
+            is_first_line = 0;
+            continue;
+        }
+
         Row row;
         if (parse_line(line, &row) != 0) {
             continue;
@@ -79,6 +103,14 @@ int load(const char *csv_path) {
 }
 
 
+
+
+
+
+
+
+
+
 static int row_matches(Row *row, ParsedQuery *pq) {
     for (int i = 0; i < pq->condition_count; i++) {
         Condition *cond = &pq->conditions[i];
@@ -114,15 +146,112 @@ static int row_matches(Row *row, ParsedQuery *pq) {
 }
 
 
+
+
+
+
+
+
+
+
+static void update_groups(Row *row, ParsedQuery *pq, GroupCount groups[], int *group_count)
+{
+    if (!pq->has_group_by) {
+        return;
+    }
+
+    char value[VALUE_MAX];
+
+    if (strcmp(pq->group_by_field, "status") == 0) {
+        sprintf(value, "%d", row->status);
+    }
+    else if (strcmp(pq->group_by_field, "bytes") == 0) {
+        sprintf(value, "%d", row->bytes);
+    }
+    else if (strcmp(pq->group_by_field, "path") == 0) {
+        strcpy(value, row->path);
+    }
+    else if (strcmp(pq->group_by_field, "host") == 0) {
+        strcpy(value, row->host);
+    }
+    else {
+        return;  // unknown field, shouldn't happen if parser validated it
+    }
+
+    for (int i = 0; i < *group_count; i++) {
+        if (strcmp(groups[i].value, value) == 0) {
+            groups[i].count++;
+            return;
+        }
+    }
+
+    if (*group_count < MAX_GROUPS) {
+        strcpy(groups[*group_count].value, value);
+        groups[*group_count].count = 1;
+        (*group_count)++;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 static void handle_match(Row *row, ParsedQuery *pq, int *count) {
     if (pq->mode == MODE_SELECT_STAR) {
         printf("%s %s %d %d\n", row->host, row->path, row->status, row->bytes);
-    } else {
+    } 
+    
+    else {
         (*count)++;
     }
-    // GROUP BY aggregation hooks in here later: instead of a flat count,
-    // this would increment a per-group-value counter instead.
 }
+
+
+
+
+
+
+
+
+static void sort_groups(GroupCount groups[], int group_count, SortOrder sort_order) {
+    if (sort_order == SORT_NONE) {
+        return;
+    }
+
+    for (int i = 0; i < group_count - 1; i++) {
+        int target_idx = i;
+        for (int j = i + 1; j < group_count; j++) {
+            if (sort_order == SORT_DESC && groups[j].count > groups[target_idx].count) {
+                target_idx = j;
+            }
+            else if (sort_order == SORT_ASC && groups[j].count < groups[target_idx].count) {
+                target_idx = j;
+            }
+        }
+        if (target_idx != i) {
+            GroupCount temp = groups[i];
+            groups[i] = groups[target_idx];
+            groups[target_idx] = temp;
+        }
+    }
+}
+
+
+
+
+
+
+
 
 
 int query(ParsedQuery *pq) {
@@ -141,6 +270,8 @@ int query(ParsedQuery *pq) {
     }
 
     int count = 0;
+    GroupCount groups[MAX_GROUPS];
+    int group_count = 0;
 
     if (status_cond_index != -1) {
         FILE *index_fp = fopen("index.dat", "rb");
@@ -164,6 +295,10 @@ int query(ParsedQuery *pq) {
                     if (read_row(&row, row_fp) == 0) {
                         if (row_matches(&row, pq)) {
                             handle_match(&row, pq, &count);
+                            if (pq->has_group_by)
+                            {
+                            update_groups(&row, pq, groups, &group_count);
+                            }
                         }
                     }
                 }
@@ -179,6 +314,9 @@ int query(ParsedQuery *pq) {
         while (read_row(&row, row_fp) == 0) {
             if (row_matches(&row, pq)) {
                 handle_match(&row, pq, &count);
+                if (pq->has_group_by) {
+                    update_groups(&row, pq, groups, &group_count);
+                }
             }
         }
     }
@@ -187,6 +325,16 @@ int query(ParsedQuery *pq) {
 
     if (pq->mode == MODE_SELECT_COUNT) {
         printf("COUNT: %d\n", count);
+    }
+
+
+    if (pq->has_group_by) 
+    {
+        for (int i = 0; i < group_count; i++) 
+        {
+            sort_groups(groups, group_count, pq->sort_order);
+            printf("%s: %d\n", groups[i].value, groups[i].count);
+        }
     }
 
     return 0;
