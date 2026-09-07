@@ -125,13 +125,17 @@ static int row_matches(Row *row, ParsedQuery *pq) {
         Condition *cond = &pq->conditions[i];
         int cmp_result;
 
-        if (strcmp(cond->field, "status") == 0) {
+            if (strcmp(cond->field, "status") == 0) {
             int val = atoi(cond->value);
-            cmp_result = row->status - val;
+            if (row->status > val) cmp_result = 1;
+            else if (row->status < val) cmp_result = -1;
+            else cmp_result = 0;
         }
         else if (strcmp(cond->field, "bytes") == 0) {
             int val = atoi(cond->value);
-            cmp_result = row->bytes - val;
+            if (row->bytes > val) cmp_result = 1;
+            else if (row->bytes < val) cmp_result = -1;
+            else cmp_result = 0;
         }
         else if (strcmp(cond->field, "path") == 0) {
             if (strcmp(cond->op, "=") != 0) return 0;
