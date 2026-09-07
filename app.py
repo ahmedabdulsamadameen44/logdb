@@ -4,7 +4,7 @@ from cs50 import SQL
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
-from helpers import  login_required, apology
+from helpers import login_required, apology
 
 # Configure application
 app = Flask(__name__)
@@ -25,6 +25,23 @@ def after_request(response):
     response.headers["Expires"] = 0
     response.headers["Pragma"] = "no-cache"
     return response
+
+
+
+
+
+
+
+@app.route("/")
+def index():
+    return redirect("/query")
+
+
+
+
+
+
+
 
 
 
@@ -62,7 +79,7 @@ def login():
         session["user_id"] = rows[0]["id"]
 
         # Redirect user to home page
-        return redirect("/")
+        return redirect("/query")
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
@@ -100,7 +117,7 @@ def change():
             return apology("WRONG PASSWORD" , 400)
         new_password_hash = generate_password_hash(new_password)
         new_password_hash_in_db = db.execute("UPDATE users SET hash = ? WHERE id = ? " , new_password_hash , user_id)
-        return redirect("/")
+        return redirect("/query")
 
 
 
@@ -114,7 +131,7 @@ def logout():
     session.clear()
 
     # Redirect user to login form
-    return redirect("/")
+    return redirect("/login")
 
 
 
@@ -160,14 +177,14 @@ def register():
         # Remember which user has logged in
         session["user_id"] = rows_register
         # Redirect user to home page
-        return redirect("/")
+        return redirect("/query")
 
 
 @app.route("/query", methods=["GET", "POST"])
 @login_required
 def query_route():
     if request.method == "GET":
-        return render_template("query_get.html")
+        return render_template("query.html")
     else:
         query_string = request.form.get("query")
         if not query_string:
@@ -175,4 +192,24 @@ def query_route():
         result = bridge.run_query(query_string)
         if "error" in result:
             return apology(result["error"], 400)
-        return render_template("query_results.html", result=result)
+        return render_template("query.html", result=result)
+
+
+
+
+
+
+
+@app.route("/saved")
+@login_required
+def saved():
+    return render_template("saved.html")
+
+
+
+
+
+@app.route("/upload")
+@login_required
+def upload():
+    return render_template("upload.html")

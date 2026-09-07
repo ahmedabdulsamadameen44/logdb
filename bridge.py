@@ -4,7 +4,7 @@ import os
 import subprocess
 
 # src/ is one level below project root, where the exe and .dat files live
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 EXE_PATH = os.path.join(PROJECT_ROOT, "bin_logdb.exe")
 
 

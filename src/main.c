@@ -1,5 +1,10 @@
-// Portions of this  implementation were developed with 
-// assistance from Claude (Anthropic)
+// AI assistance (Claude, Anthropic): I wrote main()'s argument dispatch
+// myself. Claude caught two wiring bugs during review: a missing load
+// branch that had been accidentally deleted, and a missing
+// #include "query_parser.h" in command.h that was needed for the
+// ParsedQuery type to resolve correctly.
+
+
 
 #include "hashtable.h"
 #include <string.h>

@@ -1,0 +1,129 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Query
+{% endblock %}
+
+{% block main %}
+    <h3 class="mb-4">Query</h3>
+
+    <div class="card mb-4">
+        <div class="mb-3">
+            <label class="form-label">Select</label>
+            <select id="mode-select" class="form-select">
+                <option value="star">SELECT *</option>
+                <option value="count">SELECT COUNT</option>
+            </select>
+        </div>
+
+        <div id="count-field-row" class="mb-3" hidden>
+            <label class="form-label">Count field</label>
+            <select id="count-field" class="form-select">
+                <option value="status">status</option>
+                <option value="bytes">bytes</option>
+                <option value="path">path</option>
+                <option value="host">host</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Where</label>
+            <div id="conditions-container"></div>
+            <button type="button" id="add-condition" class="btn btn-primary btn-sm mt-2">+ Add Condition</button>
+        </div>
+
+        <div id="group-by-section" class="mb-3">
+            <label class="form-label">Group By</label>
+            <div class="d-flex gap-2">
+                <select id="group-by-field" class="form-select">
+                    <option value="">(none)</option>
+                    <option value="status">status</option>
+                    <option value="bytes">bytes</option>
+                    <option value="path">path</option>
+                    <option value="host">host</option>
+                </select>
+                <select id="group-by-sort" class="form-select">
+                    <option value="">(no sort)</option>
+                    <option value="ASC">ASC</option>
+                    <option value="DESC">DESC</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Generated query</label>
+            <div id="query-preview" class="query-preview">SELECT *</div>
+        </div>
+
+        <form action="/query" method="post" id="query-form">
+            <input type="hidden" name="query" id="query-input">
+            <button type="submit" class="btn btn-primary">Run Query</button>
+        </form>
+    </div>
+
+    <template id="condition-template">
+        <div class="d-flex gap-2 mb-2 condition-row">
+            <select class="form-select cond-field">
+                <option value="status">status</option>
+                <option value="bytes">bytes</option>
+                <option value="path">path</option>
+                <option value="host">host</option>
+            </select>
+            <select class="form-select cond-op">
+                <option value="=">=</option>
+                <option value=">">&gt;</option>
+                <option value="<">&lt;</option>
+                <option value=">=">&gt;=</option>
+                <option value="<=">&lt;=</option>
+            </select>
+            <input type="text" class="form-control cond-value" placeholder="value">
+            <button type="button" class="btn btn-outline-danger btn-sm remove-condition">&times;</button>
+        </div>
+    </template>
+
+    {% if result %}
+        <div class="card">
+            {% if result.mode == "star" %}
+                <div class="table-responsive">
+                    <table class="table table-hover mt-3">
+                        <thead>
+                            <tr><th>Host</th><th>Path</th><th>Status</th><th>Bytes</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for row in result.rows %}
+                            <tr>
+                                <td>{{ row.host }}</td>
+                                <td>{{ row.path }}</td>
+                                <td>{{ row.status }}</td>
+                                <td>{{ row.bytes }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% elif result.mode == "count" %}
+                {% if result.groups %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mt-3">
+                            <thead>
+                                <tr><th>Value</th><th>Count</th></tr>
+                            </thead>
+                            <tbody>
+                                {% for g in result.groups %}
+                                <tr>
+                                    <td>{{ g.value }}</td>
+                                    <td>{{ g.count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p>Count: {{ result.value }}</p>
+                {% endif %}
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <script src="/static/query.js"></script>
+{% endblock %}
