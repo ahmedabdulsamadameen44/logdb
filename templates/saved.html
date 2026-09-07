@@ -7,6 +7,33 @@
 {% block main %}
     <h3 class="mb-4">Saved Queries</h3>
     <div class="card">
-        <p class="text-muted mb-0">Coming soon.</p>
+        {% if saved_queries %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr><th>Name</th><th>Query</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        {% for item in saved_queries %}
+                        <tr>
+                            <td>{{ item.name }}</td>
+                            <td class="query-preview">{{ item.query_text }}</td>
+                            <td>
+                                <form action="/query" method="post" class="d-inline">
+                                    <input type="hidden" name="query" value="{{ item.query_text }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">Run</button>
+                                </form>
+                                <form action="/saved/delete/{{ item.id }}" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted mb-0">No saved queries yet.</p>
+        {% endif %}
     </div>
 {% endblock %}

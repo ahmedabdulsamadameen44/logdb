@@ -59,6 +59,12 @@
             <input type="hidden" name="query" id="query-input">
             <button type="submit" class="btn btn-primary">Run Query</button>
         </form>
+
+        <form action="/saved" method="post" id="save-form" class="d-flex gap-2 align-items-center">
+            <input type="hidden" name="query" id="save-query-input">
+            <input type="text" name="name" placeholder="Query name" class="form-control" required>
+            <button type="submit" class="btn btn-outline-primary text-nowrap">Save Query</button>
+        </form>
     </div>
 
     <template id="condition-template">

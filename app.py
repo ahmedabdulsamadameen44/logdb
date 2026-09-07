@@ -180,6 +180,15 @@ def register():
         return redirect("/query")
 
 
+
+
+
+
+
+
+
+
+
 @app.route("/query", methods=["GET", "POST"])
 @login_required
 def query_route():
@@ -200,16 +209,70 @@ def query_route():
 
 
 
-@app.route("/saved")
-@login_required
-def saved():
-    return render_template("saved.html")
 
 
 
 
 
-@app.route("/upload")
+@app.route("/upload", methods=["GET", "POST"])
 @login_required
 def upload():
-    return render_template("upload.html")
+    if request.method == "POST":
+        file = request.files.get("csv_file")
+        if not file or file.filename == "":
+            return apology("no file selected", 400)
+        upload_path = os.path.join(bridge.PROJECT_ROOT, "data.csv")
+        file.save(upload_path)
+        result = bridge.run_load(upload_path)
+        if "error" in result:
+            return apology(result["error"], 400)
+        flash("Log uploaded and loaded successfully.")
+        return redirect("/query")
+    else:
+        return render_template("upload.html")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@app.route("/saved", methods=["GET", "POST"])
+@login_required
+def saved():
+    if request.method == "POST":
+        name = request.form.get("name")
+        query_text = request.form.get("query")
+        if not name or not query_text:
+            return apology("must provide name and query", 400)
+        db.execute(
+            "INSERT INTO saved_queries (user_id, name, query_text) VALUES (?, ?, ?)",
+            session["user_id"], name, query_text
+        )
+        return redirect("/saved")
+    else:
+        saved_queries = db.execute(
+            "SELECT id, name, query_text FROM saved_queries WHERE user_id = ? ORDER BY created_at DESC",
+            session["user_id"]
+        )
+        return render_template("saved.html", saved_queries=saved_queries)
+
+
+
+
+
+
+
+
+@app.route("/saved/delete/<int:id>", methods=["POST"])
+@login_required
+def delete_saved(id):
+    db.execute("DELETE FROM saved_queries WHERE id = ? AND user_id = ?", id, session["user_id"])
+    return redirect("/saved")

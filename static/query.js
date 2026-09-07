@@ -81,6 +81,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const queryText = parts.join(" ");
         preview.textContent = queryText;
         queryInput.value = queryText;
+        document.getElementById("save-query-input").value = queryText;
     }
  
     modeSelect.addEventListener("change", updateModeVisibility);

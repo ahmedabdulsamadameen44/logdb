@@ -41,3 +41,18 @@ def run_query(query_string):
 
     result_dict = {"mode": "count", "value": count_value, "groups": groups}
     return result_dict
+
+
+
+
+
+def run_load(csv_path):
+    result = subprocess.run(
+        [EXE_PATH, "load", csv_path],
+        capture_output=True,
+        text=True,
+        cwd=PROJECT_ROOT
+    )
+    if result.returncode != 0:
+        return {"error": result.stderr.strip() or "load failed"}
+    return {"success": True}

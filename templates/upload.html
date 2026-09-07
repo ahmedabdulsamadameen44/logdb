@@ -7,6 +7,10 @@
 {% block main %}
     <h3 class="mb-4">Upload Log</h3>
     <div class="card">
-        <p class="text-muted mb-0">Coming soon.</p>
+        <p class="text-muted">Uploading a new file replaces all currently loaded data.</p>
+        <form action="/upload" method="post" enctype="multipart/form-data" class="d-flex gap-2 align-items-center">
+            <input type="file" name="csv_file" accept=".csv" class="form-control" required>
+            <button type="submit" class="btn btn-primary text-nowrap">Upload</button>
+        </form>
     </div>
 {% endblock %}
