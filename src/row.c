@@ -1,3 +1,8 @@
+// AI assistance (Claude, Anthropic): reviewed struct layout and
+// read/write logic in row.h/row.c.
+
+
+
 #include "row.h"
 #include <stdio.h>
 

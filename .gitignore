@@ -7,3 +7,6 @@ data.csv
 rows.dat
 index.dat
 *.json
+__pycache__/
+flask_session/
+logdb.db

@@ -1,3 +1,9 @@
+# AI assistance (Claude, Anthropic): helped debug the /query route
+# template mismatch and reviewed Saved Queries / Upload Log routes.
+
+
+
+
 import os
 import bridge
 from cs50 import SQL
