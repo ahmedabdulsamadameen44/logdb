@@ -1,5 +1,4 @@
-// Portions of this implementation were developed with
-// assistance from Claude (Anthropic)
+// this is fully by claude
 
 #include "../src/query_parser.h"
 #include <assert.h>

@@ -1,5 +1,5 @@
-// AI assistance (Claude, Anthropic): I designed and wrote row_matches(),
-// update_groups(), sort_groups(), and the load()/query() pipeline myself.
+// AI assistance (Claude, Anthropic): claude designed and wrote row_matches(),
+// update_groups(),sort_groups(),and helped with load() / query(), I did the load()/query() pipeline myself.
 // Claude helped shape the dispatch structure in query() — deciding to
 // branch on whether a status condition exists (index-narrow path) vs.
 // falling back to a full linear scan (no status condition) — and reviewed

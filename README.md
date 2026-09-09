@@ -3,7 +3,7 @@
 A hand-built storage and indexing engine for querying NASA's 1995 HTTP
 access logs, written in C and exposed through a Flask web app.
 
-CS50 2026 final project by Ahmed.
+CS50 2026 final project .
 
 ## Why this exists
 
@@ -150,7 +150,7 @@ with a documented investigation trail is more useful — and more
 representative of real engineering — than silence or a rushed, unverified
 patch.
 
-## Index selectivity: a design limitation, not a bug
+## Index selectivity: a design limitation
 
 The hash index on `status` actually *hurts* performance for
 low-selectivity queries. `status=200` matches roughly 91% of the
@@ -191,7 +191,7 @@ Claude (Anthropic) was used as a coding assistant throughout this
 project — reviewing code for bugs, helping design some function/struct
 shapes, and helping debug specific failures. Per-file attribution
 comments describing exactly what was AI-assisted are in the source
-files themselves (see comment blocks at the top of each `.c`/`.h`/`.py`
+files themselves (see comment blocks at the top of each `.c`/`.py`
 file). The core logic, architecture decisions, and query engine
 implementation are my own work; Claude's role was closer to code review
-and pair debugging than authorship.
+,adding tests, and pair debugging than authorship.
