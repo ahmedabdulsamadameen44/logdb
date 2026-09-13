@@ -5,13 +5,13 @@
 // ParsedQuery type to resolve correctly.
 
 
-
 #include "hashtable.h"
+#include "query_parser.h" 
+#include "command.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "command.h"
-#include "query_parser.h" 
+
 
 int main (int argc, char *argv[])
 {

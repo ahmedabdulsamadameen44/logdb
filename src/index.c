@@ -2,19 +2,20 @@
 // assistance from Claude (Anthropic)
 
 
-
 #include "index.h"
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include "hashtable.h"
 #include "row.h"
 #include "parser.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdlib.h>
 
 
-int write_index_entry(const char *key, int *rows, int row_count, FILE *file) {
+
+int write_index_entry(const char *key, int *rows, int row_count, FILE *file) 
+{
     int key_len = strlen(key);
 
     if (fwrite(&key_len, sizeof(int), 1, file) != 1) {
@@ -41,13 +42,13 @@ int write_index_entry(const char *key, int *rows, int row_count, FILE *file) {
 }
 
 
+
 int read_index_entry(char **key_out, int **rows_out, int *row_count_out, FILE *file)
 {
     int key_len;
+
     if (fread(&key_len, sizeof(int), 1, file) != 1) {
-        if (feof(file)) {
-            return 1;
-        }
+        if (feof(file)) return 1; // End of file reached
         perror("fread key_len failed");
         return -2;
     }

@@ -10,7 +10,7 @@
 #include "hashtable.h"
 
 
-
+//djp2 hash function
 unsigned long hash(const char *key, int table_size){
 
     unsigned long hash_val = 5381 ;
@@ -23,6 +23,7 @@ unsigned long hash(const char *key, int table_size){
 }
 
 
+
 HashTable *create_table(int size)
 {
     HashTable *table = malloc(sizeof(HashTable));
@@ -31,7 +32,6 @@ HashTable *create_table(int size)
         fprintf(stderr, "malloc failed for table\n");
         exit(1);
     }
-
 
 
     table->buckets = malloc(sizeof(Entry *) * size);
@@ -46,33 +46,37 @@ HashTable *create_table(int size)
     }
     
 
-
     table->size = size;
     table->count = 0;
     return table;
-
 }
 
 
-void insert(HashTable *table, const char *key, int row) {
+
+void insert(HashTable *table, const char *key, int row) 
+{
     unsigned long idx = hash(key, table->size);
     Entry *curr = table->buckets[idx];
 
+
     // walk the chain looking for an existing entry with this key
-    while (curr != NULL) {
-        if (strcmp(key,curr->key) == 0) {
+    while (curr != NULL) 
+    {
+        if (strcmp(key,curr->key) == 0) 
+        {
             if (curr->row_capacity == curr->row_count)
             {
                curr->row_capacity *= 2;
                curr->rows = realloc (curr->rows, sizeof(int) * curr->row_capacity);
             }
+            
             curr->rows[curr->row_count] = row;
             curr->row_count++;
-            ;
             return;
         }
         curr = curr->next;
     }
+
 
     // no existing entry found — create a new one, prepend to chain
     Entry *new_entry = malloc(sizeof(Entry));
@@ -85,6 +89,8 @@ void insert(HashTable *table, const char *key, int row) {
     table->buckets[idx] = new_entry;
     table->count++;
 }
+
+
 
 Entry *lookup( HashTable *table, const char *key)
 {

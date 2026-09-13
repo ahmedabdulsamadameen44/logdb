@@ -2,8 +2,6 @@
 # template mismatch and reviewed Saved Queries / Upload Log routes.
 
 
-
-
 import os
 import bridge
 from cs50 import SQL
@@ -11,6 +9,8 @@ from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from helpers import login_required, apology
+
+
 
 # Configure application
 app = Flask(__name__)
@@ -24,6 +24,9 @@ Session(app)
 db = SQL("sqlite:///logdb.db")
 
 
+
+
+
 @app.after_request
 def after_request(response):
     """Ensure responses aren't cached"""
@@ -34,22 +37,9 @@ def after_request(response):
 
 
 
-
-
-
-
 @app.route("/")
 def index():
     return redirect("/query")
-
-
-
-
-
-
-
-
-
 
 
 
@@ -93,7 +83,6 @@ def login():
 
 
 
-
 @app.route("/change" , methods = ["GET" , "POST"])
 @login_required
 def change():
@@ -126,8 +115,6 @@ def change():
         return redirect("/query")
 
 
-
-
     
 @app.route("/logout")
 def logout():
@@ -138,13 +125,6 @@ def logout():
 
     # Redirect user to login form
     return redirect("/login")
-
-
-
-
-
-
-
 
 
 
@@ -187,14 +167,6 @@ def register():
 
 
 
-
-
-
-
-
-
-
-
 @app.route("/query", methods=["GET", "POST"])
 @login_required
 def query_route():
@@ -208,15 +180,6 @@ def query_route():
         if "error" in result:
             return apology(result["error"], 400)
         return render_template("query.html", result=result)
-
-
-
-
-
-
-
-
-
 
 
 
@@ -239,17 +202,6 @@ def upload():
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 @app.route("/saved", methods=["GET", "POST"])
 @login_required
 def saved():
@@ -269,11 +221,6 @@ def saved():
             session["user_id"]
         )
         return render_template("saved.html", saved_queries=saved_queries)
-
-
-
-
-
 
 
 

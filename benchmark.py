@@ -12,6 +12,7 @@ CSV_PATH = "./data.csv"
 
 
 def build_sqlite_db():
+    start = time.perf_counter()
     conn = sqlite3.connect(":memory:")
     conn.execute("CREATE TABLE logs (host TEXT, path TEXT, status INTEGER, bytes INTEGER)")
     with open(CSV_PATH, newline="", encoding="utf-8", errors="ignore") as f:
@@ -21,7 +22,14 @@ def build_sqlite_db():
     conn.executemany("INSERT INTO logs (host, path, status, bytes) VALUES (?, ?, ?, ?)", rows)
     conn.execute("CREATE INDEX idx_status ON logs(status)")
     conn.commit()
-    return conn, len(rows)
+    load_time = time.perf_counter() - start
+    return conn, len(rows), load_time
+
+
+def time_cengine_load():
+    start = time.perf_counter()
+    subprocess.run([EXE_PATH, "load", CSV_PATH], capture_output=True, text=True)
+    return time.perf_counter() - start
 
 
 def time_cengine(query_string, capture=True):
@@ -40,8 +48,12 @@ def time_sqlite(conn, sql):
 
 def main():
     print("Loading CSV into in-memory SQLite...")
-    conn, total_rows = build_sqlite_db()
-    print(f"Total rows loaded: {total_rows}\n")
+    conn, total_rows, sqlite_load_time = build_sqlite_db()
+    print(f"Total rows loaded: {total_rows}")
+    print(f"SQLite load time: {sqlite_load_time:.4f}s")
+
+    c_load_time = time_cengine_load()
+    print(f"C engine load time: {c_load_time:.4f}s\n")
 
     # First: how many rows actually match status=200? This tells us selectivity.
     _, count200 = time_sqlite(conn, "SELECT * FROM logs WHERE status = 200")
@@ -51,6 +63,7 @@ def main():
     print(f"{'Query':<20}{'C engine (s)':<15}{'C rows':<10}{'SQLite (s)':<15}{'SQLite rows':<12}")
 
     tests = [
+        ("SELECT *", "SELECT *", "SELECT * FROM logs"),
         ("status = 200", "SELECT * WHERE status = 200", "SELECT * FROM logs WHERE status = 200"),
         ("bytes > 5000", "SELECT * WHERE bytes > 5000", "SELECT * FROM logs WHERE bytes > 5000"),
     ]

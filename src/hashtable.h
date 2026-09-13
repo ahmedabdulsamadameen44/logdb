@@ -1,11 +1,10 @@
-   // Portions of this hash table implementation were developed with 
-   // assistance from Claude (Anthropic) — struct design, djb2 hash 
-   // function, and dynamic array growth logic.
+// Portions of this hash table implementation were developed with 
+// assistance from Claude (Anthropic) — struct design, djb2 hash 
+// function, and dynamic array growth logic.
+
+
 #ifndef HASHTABLE_H
 #define HASHTABLE_H
-
-
-
 
 
 typedef struct Entry
@@ -17,7 +16,6 @@ typedef struct Entry
     struct Entry *next;
     
 }Entry;
-
 
 
 
@@ -34,5 +32,6 @@ unsigned long hash(const char *key, int table_size);
 HashTable *create_table (int size);
 void insert(HashTable *table, const char *key, int row);
 Entry *lookup( HashTable *table, const char *key);
+
 
 #endif

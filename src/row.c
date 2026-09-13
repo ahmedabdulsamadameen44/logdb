@@ -20,15 +20,13 @@ int write_row(Row *row , FILE *file)
 int read_row(Row *row , FILE *file)
 {
     size_t read = fread(row,sizeof(Row),1,file);
-    if (feof(file))
-    {
-        return 1;
-    }
+    if (feof(file)) return 1;
     
     if (read != 1)
     {
         perror("fread failed");
         return -2;
     }
+    
     return 0;
 }

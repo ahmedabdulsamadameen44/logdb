@@ -12,12 +12,15 @@
 #include <ctype.h>
 
 
+
 int tokenize(const char *query, Token out_tokens[MAX_TOKENS]) 
 {
     int query_len = strlen(query);
     int token_count = 0;
     int i = 0;
     char op[3];
+
+
     while (i < query_len)
     {
         if (token_count >= MAX_TOKENS) return -1;
@@ -28,57 +31,64 @@ int tokenize(const char *query, Token out_tokens[MAX_TOKENS])
             op[j++] = query[i];
 
             if (query[i + 1] == '=')
-            {
-                op[j++] = '=';
-            }
+                {
+                    op[j++] = '=';
+                }
             op[j] = '\0';
 
-            if (strcmp(op, "=") == 0 || strcmp(op, ">") == 0 || strcmp(op, "<") == 0 || strcmp(op, ">=") == 0 || strcmp(op, "<=") == 0) 
-            {
-                out_tokens[token_count].type = TOKEN_OP;
-                strcpy(out_tokens[token_count].text, op);
-                token_count++;
-            }
+            out_tokens[token_count].type = TOKEN_OP;
+            strcpy(out_tokens[token_count].text, op);
+            token_count++;
             i += j;
         }  
+
         else if (query[i] == ' ' || query[i] == '\t' || query[i] == '\n') 
         {
             i++;
             continue;
         } 
+
         else 
         {
             int j = 0;
             char token_text[TOKEN_MAX];
+
+            // scan the letters until we hit a space, tab, newline, or operator
             while (i < query_len && j < TOKEN_MAX - 1 && query[i] != ' ' && query[i] != '\t' && query[i] != '\n' && query[i] != '=' && query[i] != '<' && query[i] != '>') 
             {
                 token_text[j++] = query[i++];
             }
+
+            // null-terminate the token text
             token_text[j] = '\0';
 
             if (strcmp(token_text, "SELECT") == 0 || strcmp(token_text, "WHERE") == 0 || strcmp(token_text, "AND") == 0 || strcmp(token_text, "GROUP") == 0 || strcmp(token_text, "BY") == 0 || strcmp(token_text, "COUNT") == 0  || strcmp(token_text, "DESC") == 0 || strcmp(token_text, "ASC") == 0) 
             {
                 out_tokens[token_count].type = TOKEN_KEYWORD;
             } 
+
             else if (strcmp(token_text, "status") == 0 || strcmp(token_text, "path") == 0 || strcmp(token_text, "bytes") == 0 || strcmp(token_text, "host") == 0) 
             {
                 out_tokens[token_count].type = TOKEN_FIELD;
             } 
+            
             else if (strcmp(token_text, "*") == 0) 
             {
                 out_tokens[token_count].type = TOKEN_STAR;
             } 
+            
             else 
             {
                 out_tokens[token_count].type = TOKEN_VALUE;
             }
-
+            // copy the token text into the output token
             strcpy(out_tokens[token_count].text, token_text);
             token_count++;
         }
     }
     return token_count;
 }
+
 
 
 int parse_query(Token tokens[], int token_count, ParsedQuery *out_query) 
@@ -98,20 +108,22 @@ int parse_query(Token tokens[], int token_count, ParsedQuery *out_query)
         out_query->mode = MODE_SELECT_STAR;
         i++;
     } 
+
+
     else if (i < token_count && tokens[i].type == TOKEN_KEYWORD && strcmp(tokens[i].text, "COUNT") == 0) 
     {
         out_query->mode = MODE_SELECT_COUNT;
         i++;
+        
         if (i < token_count && tokens[i].type == TOKEN_FIELD) 
         {
             strcpy(out_query->count_field, tokens[i].text);
             i++;
         } 
-        else 
-        {
-            return -1;
-        }
+
+        else return -1;
     } 
+
     else 
     {
         return -1;
@@ -122,39 +134,27 @@ int parse_query(Token tokens[], int token_count, ParsedQuery *out_query)
         i++;
         while (i + 3 <= token_count && out_query->condition_count < MAX_CONDITIONS) 
         {
-            if (tokens[i].type != TOKEN_FIELD || tokens[i + 1].type != TOKEN_OP || tokens[i + 2].type != TOKEN_VALUE) 
-            {
-                return -1;
-            }
+            if (tokens[i].type != TOKEN_FIELD || tokens[i + 1].type != TOKEN_OP || tokens[i + 2].type != TOKEN_VALUE) return -1;
+
             strcpy(out_query->conditions[out_query->condition_count].field, tokens[i].text);
             strcpy(out_query->conditions[out_query->condition_count].op, tokens[i + 1].text);
             strcpy(out_query->conditions[out_query->condition_count].value, tokens[i + 2].text);
             out_query->condition_count++;
             i += 3;
 
-            if (i < token_count && tokens[i].type == TOKEN_KEYWORD && strcmp(tokens[i].text, "AND") == 0) 
-            {
-                i++;
-            } 
-            else 
-            {
-                break;
-            }
+            if (i < token_count && tokens[i].type == TOKEN_KEYWORD && strcmp(tokens[i].text, "AND") == 0) i++;
+            else break;
         }
     }
+
     if (i < token_count && tokens[i].type == TOKEN_KEYWORD && strcmp(tokens[i].text, "GROUP") == 0) 
     {
         i++;
-        if (!(i < token_count && tokens[i].type == TOKEN_KEYWORD && strcmp(tokens[i].text, "BY") == 0))
-        {
-            return -1;
-        }
+        
+        if (!(i < token_count && tokens[i].type == TOKEN_KEYWORD && strcmp(tokens[i].text, "BY") == 0)) return -1;
         i++;
 
-        if (!(i < token_count && tokens[i].type == TOKEN_FIELD))
-        {
-            return -1;
-        }
+        if (!(i < token_count && tokens[i].type == TOKEN_FIELD)) return -1;
         strcpy(out_query->group_by_field, tokens[i].text);
         out_query->has_group_by = 1;
         i++;
@@ -172,15 +172,8 @@ int parse_query(Token tokens[], int token_count, ParsedQuery *out_query)
             i++;
         }
     }
-    if (i != token_count) 
-    {
-        return -1;
-    }
 
-    if (out_query->mode == MODE_SELECT_STAR && out_query->has_group_by) {
-    return -1;
-    }
-
-    
+    if (i != token_count) return -1;
+    if (out_query->mode == MODE_SELECT_STAR && out_query->has_group_by) return -1;
     return 0;
 }

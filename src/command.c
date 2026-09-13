@@ -1,5 +1,5 @@
 // AI assistance (Claude, Anthropic): claude designed and wrote row_matches(),
-// update_groups(),sort_groups(),and helped with load() / query(), I did the load()/query() pipeline myself.
+// update_groups(),sort_groups(), and helped with load() / query(), I did the load()/query() pipeline myself.
 // Claude helped shape the dispatch structure in query() — deciding to
 // branch on whether a status condition exists (index-narrow path) vs.
 // falling back to a full linear scan (no status condition) — and reviewed
@@ -36,7 +36,8 @@ typedef struct
 
 
 
-int load(const char *csv_path) {
+int load(const char *csv_path) 
+{
     FILE *csv_fp = fopen(csv_path, "r");
     if (csv_fp == NULL) {
         perror("fopen csv");
@@ -167,8 +168,7 @@ static int row_matches(Row *row, ParsedQuery *pq) {
 
 
 
-static void update_groups(Row *row, ParsedQuery *pq, GroupCount groups[], int *group_count)
-{
+static void update_groups(Row *row, ParsedQuery *pq, GroupCount groups[], int *group_count){
     if (!pq->has_group_by) {
         return;
     }
@@ -266,8 +266,8 @@ static void sort_groups(GroupCount groups[], int group_count, SortOrder sort_ord
 
 
 
-
-int query(ParsedQuery *pq) {
+int query(ParsedQuery *pq) 
+{
     int status_cond_index = -1;
     for (int i = 0; i < pq->condition_count; i++) {
         if (strcmp(pq->conditions[i].field, "status") == 0) {
@@ -282,6 +282,28 @@ int query(ParsedQuery *pq) {
         return 1;
     }
 
+    fseek(row_fp, 0, SEEK_END);
+    long file_size = ftell(row_fp);
+    rewind(row_fp);
+
+    long total_rows = file_size / sizeof(Row);
+
+    Row *all_rows = malloc(file_size);
+    if (all_rows == NULL) {
+        perror("malloc failed for all_rows");
+        fclose(row_fp);
+        return 1;
+    }
+
+    if (fread(all_rows, sizeof(Row), total_rows, row_fp) != (size_t)total_rows) {
+        perror("fread failed reading rows.dat into memory");
+        free(all_rows);
+        fclose(row_fp);
+        return 1;
+    }
+
+    fclose(row_fp);
+
     int count = 0;
     GroupCount groups[MAX_GROUPS];
     int group_count = 0;
@@ -290,7 +312,7 @@ int query(ParsedQuery *pq) {
         FILE *index_fp = fopen("index.dat", "rb");
         if (index_fp == NULL) {
             perror("fopen index.dat");
-            fclose(row_fp);
+            free(all_rows);
             return 1;
         }
 
@@ -303,15 +325,14 @@ int query(ParsedQuery *pq) {
             if (!found && strcmp(key, pq->conditions[status_cond_index].value) == 0) {
                 found = 1;
                 for (int i = 0; i < row_count; i++) {
-                    Row row;
-                    fseek(row_fp, (long)rows[i] * sizeof(Row), SEEK_SET);
-                    if (read_row(&row, row_fp) == 0) {
-                        if (row_matches(&row, pq)) {
-                            handle_match(&row, pq, &count);
-                            if (pq->has_group_by)
-                            {
-                            update_groups(&row, pq, groups, &group_count);
-                            }
+                    if (rows[i] < 0 || rows[i] >= total_rows) {
+                        continue;
+                    }
+                    Row *row = &all_rows[rows[i]];
+                    if (row_matches(row, pq)) {
+                        handle_match(row, pq, &count);
+                        if (pq->has_group_by) {
+                            update_groups(row, pq, groups, &group_count);
                         }
                     }
                 }
@@ -323,23 +344,22 @@ int query(ParsedQuery *pq) {
         fclose(index_fp);
     }
     else {
-        Row row;
-        while (read_row(&row, row_fp) == 0) {
-            if (row_matches(&row, pq)) {
-                handle_match(&row, pq, &count);
+        for (long i = 0; i < total_rows; i++) {
+            Row *row = &all_rows[i];
+            if (row_matches(row, pq)) {
+                handle_match(row, pq, &count);
                 if (pq->has_group_by) {
-                    update_groups(&row, pq, groups, &group_count);
+                    update_groups(row, pq, groups, &group_count);
                 }
             }
         }
     }
 
-    fclose(row_fp);
+    free(all_rows);
 
     if (pq->mode == MODE_SELECT_COUNT) {
         printf("COUNT\x1F%d\n", count);   
     }
-
 
     if (pq->has_group_by) 
     {

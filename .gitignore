@@ -10,3 +10,4 @@ index.dat
 __pycache__/
 flask_session/
 logdb.db
+*.txt

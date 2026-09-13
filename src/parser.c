@@ -9,7 +9,8 @@
 
 
 
-int parse_line(char *line, Row *row) {
+int parse_line(char *line, Row *row) 
+{
     char buf[512];
     strncpy(buf, line, sizeof(buf) - 1);
     buf[sizeof(buf) - 1] = '\0';
