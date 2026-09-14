@@ -16,6 +16,9 @@ building a smaller version of it, not to outperform it (see
 [Benchmarks](#benchmarks) for how close it gets, and why the remaining
 gap is informative rather than a failure).
 
+## Video demo
+https://youtu.be/vMdCyZDsZ4U?si=ee4BddG77PdJp0Zs
+
 ## Architecture
 
 ```
